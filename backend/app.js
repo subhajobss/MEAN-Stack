@@ -23,24 +23,24 @@ const app = express();
 
 // for DB connection
 const Post = require('./models/post');
-const MongoClient = require('mongodb').MongoClient;
+const MongoClient = require('mongodb').MongoClient; 
 const url = 'mongodb://subhashini:mlab123@ds137763.mlab.com:37763/subha_test';
-
-MongoClient.connect(url,(error,database) => {
+var db = '';
+MongoClient.connect(url,(error,database) => { 
     if(error){
         return console.log(error);
     }
-    const db = database.db('subha_test');
+    db = database.db('subha_test');
     db.collection('posts').insertOne(
     {
-        title:'123',content:'123'
+        title:'123',content:'789'
     },
     function(err,res){
         if(err){
             database.close();
             return console.log(err);
         }
-        database.close();
+       // database.close();
     });
 
     //To find the inserted documents, store collections first. then collection.find
@@ -65,29 +65,59 @@ app.use((req,res,next) => {
     next();
 });
 
-app.post("/api/posts", (req,res,next) => {
-    //const post = req.body;
+// app.post("/api/posts", (req,res,next) => {
+//     //const post = req.body;
+//     const post = new Post({
+//         title: req.body.title,
+//         content: req.body.content
+//     });
+//     post.save();
+//     console.log(post);
+//     res.status(201).json({
+//         message : 'Post added Successfully!'
+//     });
+// });
+app.post("/api/posts", (req, res, next) => {
+    console.log('ADDing@@@@@@@@@@@@');
+    
     const post = new Post({
-        title: req.body.title,
-        content: req.body.content
+      title: req.body.title,
+      content: req.body.content
     });
-    post.save();
-    console.log(post);
-    res.status(201).json({
-        message : 'Post added Successfully!'
+    const collection = db.collection('posts');
+   // collection.insertOne(post)
+    collection.insertOne(post).then(createdPost => {
+        console.log('DB ',createdPost);
+      res.status(201).json({
+        message: "Post added successfully",
+        postId: createdPost._id
+      });
     });
+  });
+  
+ 
+app.get('/api/posts',(req,res,next) =>{
+    const collection = db.collection('posts');
+    collection.find({}).toArray((err,docs)=>{
+        console.log('Found the following records');
+        console.log(docs);
+        res.status(200).json({
+                    message:'Posts fetched successfully',
+                   posts : docs
+       });
+    })
+    // Post.find().then( documents => {
+    //     console.log('doc',documents);
+    //     res.status(200).json({
+    //         message:'Posts fetched successfully',
+    //         posts : documents
+    //     });
+    // });
+      
 });
 
-app.get('/api/posts/',(req,res,next) =>{
-    const posts = [
-        {id:'1', title:'post1', content:'Content1'},
-        {id:'2', title:'post2', content:'Content2'},
-        {id:'3', title:'post3', content:'Content3'}
-    ];
-    res.status(200).json({
-        message:'Posts fetched successfully',
-        posts : posts
-    });    
-});
-
+app.delete('/api/posts/:id',(req,res,next)=>{
+    console.log(req.params.id);
+    res.status(200).json({message : 'Post Deleted!'});
+})
 module.exports = app;

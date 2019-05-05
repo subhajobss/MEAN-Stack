@@ -1,4 +1,4 @@
-/* const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 // pass javascript object in Schema - > holds custom configuration.
 
@@ -9,4 +9,3 @@ const postSchema = mongoose.Schema({
 
 module.exports = mongoose.model('Post', postSchema);
 
- */
